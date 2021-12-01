@@ -169,36 +169,65 @@ class world extends Phaser.Scene {
     var snake09 = map.findObject("objectLayer",(obj) => obj.name === "snake09");
     var snake10 = map.findObject("objectLayer",(obj) => obj.name === "snake10");
 
-    this.snake1 = this.physics.add.group();
+    this.snakeGroup1 = this.physics.add.group();
+    this.snakeGroup2 = this.physics.add.group();
+    this.snakeGroup3 = this.physics.add.group();
+    this.snakeGroup4 = this.physics.add.group();
 
-    this.snake1.create(snake01.x, snake01.y, 'snake').setScale(0.5).setSize(90,60);
-    this.snake1.create(snake03.x, snake03.y, 'snake').setScale(0.5).setSize(90,60);
-    this.snake1.create(snake04.x, snake04.y, 'snake').setScale(0.5).setSize(90,60);
-    this.snake1.create(snake05.x, snake05.y, 'snake').setScale(0.5).setSize(90,60);
-    this.snake1.create(snake06.x, snake06.y, 'snake').setScale(0.5).setSize(90,60);
-    this.snake1.create(snake07.x, snake07.y, 'snake').setScale(0.5).setSize(90,60);
-    this.snake1.create(snake08.x, snake08.y, 'snake').setScale(0.5).setSize(90,60);
-    this.snake1.create(snake09.x, snake09.y, 'snake').setScale(0.5).setSize(90,60);
-    this.snake1.create(snake10.x, snake10.y, 'snake').setScale(0.5).setSize(90,60);//.play("crawl");
+    this.snakeGroup1.create(snake01.x, snake01.y, 'snake').setScale(0.5).setSize(90,60);
+    this.snakeGroup1.create(snake03.x, snake03.y, 'snake').setScale(0.5).setSize(90,60);
+    this.snakeGroup1.create(snake04.x, snake04.y, 'snake').setScale(0.5).setSize(90,60);
+    this.snakeGroup2.create(snake05.x, snake05.y, 'snake').setScale(0.5).setSize(90,60);
+    this.snakeGroup3.create(snake06.x, snake06.y, 'snake').setScale(0.5).setSize(90,60);
+    this.snakeGroup4.create(snake07.x, snake07.y, 'snake').setScale(0.5).setSize(90,60);
+    this.snakeGroup3.create(snake08.x, snake08.y, 'snake').setScale(0.5).setSize(90,60);
+    this.snakeGroup2.create(snake09.x, snake09.y, 'snake').setScale(0.5).setSize(90,60);
+    this.snakeGroup4.create(snake10.x, snake10.y, 'snake').setScale(0.5).setSize(90,60);//.play("crawl");
 
-    this.snake1.children.iterate(snake => 
+    this.snakeGroup1.children.iterate(snake => 
     {
       snake.play('crawl');
       snake.flipX = true;
     })
+    this.snakeGroup2.children.iterate(snake => 
+      {
+        snake.play('crawl');
+        snake.flipX = true;
+      })
+    this.snakeGroup3.children.iterate(snake => 
+      {
+        snake.play('crawl');
+        snake.flipX = true;
+      })
+    this.snakeGroup4.children.iterate(snake => 
+      {
+        snake.play('crawl');
+        snake.flipX = true;
+      })
 
     //load bat enemies object
     var bat01 = map.findObject("objectLayer",(obj) => obj.name === "bat01");
     var bat02 = map.findObject("objectLayer",(obj) => obj.name === "bat02");
     var bat03 = map.findObject("objectLayer",(obj) => obj.name === "bat03");
+    var bat04 = map.findObject("objectLayer",(obj) => obj.name === "bat04");
+    var bat05 = map.findObject("objectLayer",(obj) => obj.name === "bat05");
+    var bat06 = map.findObject("objectLayer",(obj) => obj.name === "bat06");
 
-    this.bat1 = this.physics.add.group();
+    this.batGroup1 = this.physics.add.group();
+    this.batGroup2 = this.physics.add.group();
 
-    this.bat1.create(bat01.x, bat01.y, 'bat').setScale(0.5).setSize(90,60);
-    this.bat1.create(bat02.x, bat02.y, 'bat').setScale(0.5).setSize(90,60);
-    this.bat1.create(bat03.x, bat03.y, 'bat').setScale(0.5).setSize(90,60);
+    this.batGroup1.create(bat01.x, bat01.y, 'bat').setScale(0.5).setSize(90,60);
+    this.batGroup2.create(bat02.x, bat02.y, 'bat').setScale(0.5).setSize(90,60);
+    this.batGroup2.create(bat03.x, bat03.y, 'bat').setScale(0.5).setSize(90,60);
+    this.batGroup1.create(bat04.x, bat04.y, 'bat').setScale(0.5).setSize(90,60);
+    this.batGroup2.create(bat05.x, bat05.y, 'bat').setScale(0.5).setSize(90,60);
+    this.batGroup1.create(bat06.x, bat06.y, 'bat').setScale(0.5).setSize(90,60);
 
-    this.bat1.children.iterate(bat => 
+    this.batGroup1.children.iterate(bat => 
+      {
+        bat.play('fly');
+      })
+    this.batGroup2.children.iterate(bat => 
       {
         bat.play('fly');
       })
@@ -252,7 +281,7 @@ class world extends Phaser.Scene {
 
     this.time.addEvent({
       delay: 3000,
-      callback: this.moveDownUpTween,
+      callback: this.moveDownUp,
       callbackScope: this,
       loop: false,
     });
@@ -264,7 +293,7 @@ class world extends Phaser.Scene {
     this.time.addEvent({ delay: 2000, callback: this.moveUp, callbackScope: this, loop: true});
     this.time.addEvent({ delay: 3000, callback: this.moveDown, callbackScope: this, loop: true});
 
-    this.physics.add.overlap(this.player, this.snake1, this.minusHealth1, null, this);
+    this.physics.add.overlap(this.player, this.snakeGroup1, this.minusHealth1, null, this);
 
     // set bounds so the camera won't go outside the game world
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
@@ -346,14 +375,14 @@ class world extends Phaser.Scene {
     }
   }
 
-  minusHealth1 (player, snake1)
+  minusHealth1 (player, snakeGroup1)
   {
     if (this.spaceDown.isDown)
   {
-    snake1.disableBody(true,true);
+    snakeGroup1.disableBody(true,true);
   } else if (this.spaceDown.isDown === false)
   {
-    snake1.disableBody(true,true);
+    snakeGroup1.disableBody(true,true);
     this.liveCount = 1;
     this.cameras.main.shake(100);
   }
@@ -385,7 +414,7 @@ class world extends Phaser.Scene {
     console.log("moveDownUp tween");
     this.tweens.timeline
     ({
-      targets: this.snake1.getChildren(this.snake01, this.snake03, this.snake04), //[this.snake01,this.snake03,this.snake04],
+      targets: this.snakeGroup1.getChildren(), //[this.snake01,this.snake03,this.snake04],
       loop: -1, // loop forever
       ease: "Linear",
       duration: 4000,
@@ -396,7 +425,7 @@ class world extends Phaser.Scene {
 
     this.tweens.timeline
     ({
-      targets: this.snake1.getChildren(this.snake05, this.snake09),//[this.snake05,this.snake09],
+      targets: this.snakeGroup2.getChildren(),//[this.snake05,this.snake09],
       loop: -1, // loop forever
       ease: "Linear",
       duration: 4000,
@@ -407,7 +436,7 @@ class world extends Phaser.Scene {
 
     this.tweens.timeline
     ({
-      targets: this.snake1.getChildren(this.snake06, this.snake08), //[this.snake06,this.snake08],
+      targets: this.snakeGroup3.getChildren(), //[this.snake06,this.snake08],
       loop: -1, // loop forever
       ease: "Linear",
       duration: 4000,
@@ -418,7 +447,7 @@ class world extends Phaser.Scene {
 
     this.tweens.timeline
     ({
-      targets: this.snake1.getChildren(this.snake07, this.snake10), // [this.snake07,this.snake10],
+      targets: this.snakeGroup4.getChildren(), // [this.snake07,this.snake10],
       loop: -1, // loop forever
       ease: "Linear",
       duration: 4000,
@@ -432,7 +461,7 @@ class world extends Phaser.Scene {
     console.log("moveDownUp tween");
     this.tweens.timeline
     ({
-      targets: this.bat1.getChildren(this.bat01, this.bat04, this.bat06), //[this.bat01, this.bat04, this.bat06],
+      targets: this.batGroup1.getChildren(), //[this.bat01, this.bat04, this.bat06],
       ease: "Linear",
       loop: -1, // loop forever
       duration: 2000,
@@ -442,7 +471,7 @@ class world extends Phaser.Scene {
 
     this.tweens.timeline
     ({
-      targets: this.bat1.getChildren(this.bat02, this.bat03, this.bat05), //[this.bat02, this.bat03, this.bat05],
+      targets: this.batGroup2.getChildren(), //[this.bat02, this.bat03, this.bat05],
       ease: "Linear",
       loop: -1, // loop forever
       duration: 2000,
