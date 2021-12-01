@@ -233,13 +233,13 @@ class world extends Phaser.Scene {
     //this.potionLayer.setTileIndexCallback(212, this.removeGreen, this);
 
     // Add custom properties in Tiled called "mouintain" as bool
-    //this.waterLayer.setCollisionByProperty({grass: true});
-    //this.waterLayer.setCollisionByProperty({grass2: true});
+    this.waterLayer.setCollisionByProperty({grass: true});
+    this.waterLayer.setCollisionByProperty({grass2: true});
     this.roomLayer.setCollisionByProperty({room: true});
 
 
     // What will collider with what layers
-    //this.physics.add.collider(this.waterLayer, this.player);
+    this.physics.add.collider(this.waterLayer, this.player);
     this.physics.add.collider(this.roomLayer, this.player);
     this.physics.add.collider(this.potionLayer, this.player);
 
