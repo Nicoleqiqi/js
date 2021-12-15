@@ -10,14 +10,6 @@ class room3 extends Phaser.Scene {
 }
 
   preload() {
-    this.load.atlas('hiro walk', 'assets/hiro walk.png',
-                                     'assets/hiro walk.json')
-    this.load.atlas('hiro attack', 'assets/hiro attack.png',
-                                     'assets/hiro attack.json')
-    this.load.atlas('hiro front', 'assets/hiro front.png',
-                                    'assets/hiro front.json')
-    this.load.atlas('hiro back', 'assets/hiro back.png',
-                                    'assets/hiro back.json')
     this.load.atlas('bat','assets/bat.png',
                           'assets/bat.json')
 
@@ -27,118 +19,80 @@ class room3 extends Phaser.Scene {
     // Step 2 : Preload any images here, nickname, filename
     this.load.image("groundPng", "assets/Pipoya.png");
     this.load.image("teleportPng","assets/teleportTile.png");
+    this.load.image('heartPng','assets/heart.png');
+    this.load.image('hiroHealth','assets/health1.png');
+    this.load.image('teleportOn','assets/teleportOn.png');
+    this.load.image('teleportOff','assets/teleportOff.png');
+
+    this.load.audio('teleportActivated','assets/teleportActivated.mp3');
+    this.load.audio('mainBgm','assets/island2.mp3');
+    this.load.audio('hit','assets/minusHeart.wav');
   }
 
   create() {
     console.log("*** room3 scene");
+    console.log("live:", window.heart);
+    
+    window.music = this.sound.add('mainBgm', { loop:true,}).setVolume(0.1);
+    window.music.play();
+
+    this.teleportActivatedSnd = this.sound.add('teleportActivated');
+    this.hitSnd = this.sound.add('hit'); //hit by enemy
 
     let map = this.make.tilemap({key:'room3'});
 
-    //animation for Hiro
-    this.anims.create({
-      key:'left',
-      frames: [
-          {key:'hiro walk', frame:'walk 01'},
-          {key:'hiro walk', frame:'walk 02'},
-          {key:'hiro walk', frame:'walk 03'},
-          {key:'hiro walk', frame:'walk 04'},
-      ],
-      frameRate: 6,
-      repeat: -1
-  })
-
+  //anims for bat
   this.anims.create({
-      key:'right',
-      frames:[
-          {key:'hiro walk', frame:'walk 05'},
-          {key:'hiro walk', frame:'walk 06'},
-          {key:'hiro walk', frame:'walk 07'},
-          {key:'hiro walk', frame:'walk 08'},
-      ],
-      frameRate: 6,
-      repeat: -1
-  })
-
-  this.anims.create({
-      key:'attack',
-      frames:[
-          {key:'hiro attack',frame:'hiro attack 01'},
-          {key:'hiro attack',frame:'hiro attack 02'},
-          {key:'hiro attack',frame:'hiro attack 03'},
-          {key:'hiro attack',frame:'hiro attack 04'},
-      ],
-      frameRate: 6,
-      repeat: -1
-  })
-
-  this.anims.create({
-      key:'down',
-      frames:[
-          {key:'hiro front',frame:'hiro front 01'},
-          {key:'hiro front',frame:'hiro front 02'},
-          {key:'hiro front',frame:'hiro front 03'},
-      ],
-      frameRate: 6,
-      repeat: -1
-  })
-
-  this.anims.create({
-      key:'up',
-      frames:[
-          {key:'hiro back',frame:'hiro back 01'},
-          {key:'hiro back',frame:'hiro back 02'},
-          {key:'hiro back',frame:'hiro back 03'},
-      ],
-      frameRate: 5,
-      repeat: -1
-  })
-
-  this.anims.create({
-    key:'leftAttack',
+    key:'fly',
     frames:[
-        {key:'hiro attack',frame:'hiro attack 01'},
-        {key:'hiro attack',frame:'hiro attack 02'},
-        {key:'hiro attack',frame:'hiro attack 03'},
-        {key:'hiro attack',frame:'hiro attack 04'},
-    ],
-    frameRate: 12,
-    repeat: -1
-})
-
-this.anims.create({
-  key:'idle',
-  frames:[
-      {key:'right', frame:'walk 01'},
-      {key:'right', frame:'walk 02'},
-  ],
-  frameRate: 5,
-  repeat: -1
-})
-
-//anims for bat
-this.anims.create({
-  key:'fly',
-  frames:[
       {key:'bat',frame:'bat 01'},
       {key:'bat',frame:'bat 02'},
-  ],
-  frameRate: 7,
-  repeat: -1
-})
+   ],
+    frameRate: 7,
+    repeat: -1
+  })
 
     // Step 4 Load the game tiles
     // 1st parameter is name in Tiled,
     // 2nd parameter is key in Preload
     let groundTiles = map.addTilesetImage("Pipoya", "groundPng");
-    let teleportTiles = map.addTilesetImage("Teleport", "teleportPng");
 
-    let tilesArray = [ groundTiles,teleportTiles]
+    let tilesArray = [ groundTiles]
 
     // Step 5  Load in layers by layers
     this.groundLayer = map.createLayer("groundLayer",tilesArray,0,0);
     this.plantsLayer = map.createLayer("plantsLayer",tilesArray,0,0);
     this.wallLayer = map.createLayer("wallLayer",tilesArray,0,0);
-    this.teleportLayer = map.createLayer("teleportLayer",tilesArray,0,0);
+
+    //health hearts
+    this.hiroHealth = this.add.image(30,25,'hiroHealth').setScale(0.5).setScrollFactor(0);
+    this.heart1 = this.add.image(70,25,'heartPng').setScale(0.3).setScrollFactor(0).setVisible(false);
+    this.heart2 = this.add.image(110,25,'heartPng').setScale(0.3).setScrollFactor(0).setVisible(false);
+    this.heart3 = this.add.image(150,25,'heartPng').setScale(0.3).setScrollFactor(0).setVisible(false);
+    this.heart4 = this.add.image(190,25,'heartPng').setScale(0.3).setScrollFactor(0).setVisible(false);
+    this.heart5 = this.add.image(230,25,'heartPng').setScale(0.3).setScrollFactor(0).setVisible(false);
+
+    if (window.heart>= 5){
+      this.heart1.setVisible(true);
+      this.heart2.setVisible(true);
+      this.heart3.setVisible(true);
+      this.heart4.setVisible(true);
+      this.heart5.setVisible(true);
+    } else if (window.heart == 4){
+      this.heart1.setVisible(true);
+      this.heart2.setVisible(true);
+      this.heart3.setVisible(true);
+      this.heart4.setVisible(true);
+    } else if (window.heart == 3){
+      this.heart1.setVisible(true);
+      this.heart2.setVisible(true);
+      this.heart3.setVisible(true);
+    } else if (window.heart == 2){
+      this.heart1.setVisible(true);
+      this.heart2.setVisible(true);
+    } else if (window.heart == 1){
+      this.heart1.setVisible(true);
+  }
 
     //load bat enemies object
     var bat01 = map.findObject("objectLayer",(obj) => obj.name === "bat01");
@@ -150,11 +104,20 @@ this.anims.create({
     this.bat02 = this.physics.add.sprite(bat02.x, bat02.y, 'bat').setScale(0.5).setSize(90,60).play("fly");
     this.bat03 = this.physics.add.sprite(bat03.x, bat03.y, 'bat').setScale(0.5).setSize(90,60).play("fly");
 
-    // create the this.playersprite
-    //this.player = this.physics.add.sprite(200,677,'hiro walk').setScale(0.5).setSize(50,100);
+    var score = 0;
+    var scoreText;
+
+    this.coinScore = this.add.text(340,10,'Coin:'+ window.coin,{font: "25px Arial Rounded MT Bold", fill:'#ef6c00'}).setScrollFactor(0);
+    this.crystalScore = this.add.text(340,35,'Crystal:'+ window.crystal,{font: "25px Arial Rounded MT Bold", fill:'#ef6c00'}).setScrollFactor(0);
 
     this.physics.world.bounds.width = this.groundLayer.width;
     this.physics.world.bounds.height = this.groundLayer.height;
+
+    if(window.coin>=15 && window.crystal>=2){
+    this.teleportOn = this.physics.add.sprite(360,160, 'teleportOn').setScale(0.4).setSize(180,100).setVisible(true);
+    }else {
+    this.teleportOff = this.physics.add.sprite(360,160, 'teleportOff').setScale(0.4).setSize(180,100).setVisible(true);
+    }
 
     // create the this.playersprite
     this.player = this.physics.add.sprite(
@@ -183,6 +146,11 @@ this.anims.create({
     // What will collider with what layers
     this.wallLayer.setCollisionByProperty({cave3: true});
 
+    this.physics.add.overlap(this.player, this.bat01, this.minusHealth2, null, this);
+    this.physics.add.overlap(this.player, this.bat02, this.minusHealth2, null, this);
+    this.physics.add.overlap(this.player, this.bat03, this.minusHealth2, null, this);
+    this.physics.add.overlap(this.player, this.teleportOn, this.jumpToVictory, null, this);
+
     this.physics.add.collider(this.wallLayer, this.player);
 
     // create the arrow keys
@@ -205,42 +173,93 @@ this.anims.create({
 
     if (this.cursors.left.isDown) {
       this.player.body.setVelocityX(-200);
+      this.player.setSize(50,100);
       this.player.anims.play("right", true); // walk left
-      this.player.flipX = true; // flip the sprite to the left
+      this.player.flipX = true; 
+      window.attack = false;
+      // flip the sprite to the left
       //console.log('left');
     }
 
     else if (this.cursors.right.isDown) {
       this.player.body.setVelocityX(200);
+      this.player.setSize(50,100);
       this.player.anims.play("right", true);
-      this.player.flipX = false; // use the original sprite looking to the right
+      this.player.flipX = false; 
+      window.attack = false;
+      // use the original sprite looking to the right
       //console.log('right');
     }
 
-    else if (this.spaceDown.isDown) { //this.cursors.left.isDown && 
+    else if (this.cursors.space.isDown) { //this.cursors.left.isDown && 
         this.player.body.setVelocityX(0);
         this.player.body.setVelocityY(0);
-        this.player.anims.play("leftAttack", true); // walk left
+        this.player.setSize(100,100);
+        this.player.anims.play("leftAttack", true);
+        console.log("attack");
+        window.attack = true;
+        // walk left
         //this.player.flipX = false; // flip the sprite to the left
     } 
     
     else if (this.cursors.up.isDown) {
       this.player.body.setVelocityY(-200);
+      this.player.setSize(50,100);
       this.player.anims.play("up", true);
+      window.attack = false;
       //console.log('up');
     } 
     
     else if (this.cursors.down.isDown) {
       this.player.body.setVelocityY(200);
+      this.player.setSize(50,100);
       this.player.anims.play("down", true);
+      window.attack = false;
       //console.log('down');
     } 
     
     else {
       this.player.anims.stop();
       this.player.body.setVelocity(0, 0);
+      this.player.setSize(50,100);
+      window.attack = false;
       //console.log('idle');
     }
+  }
+
+  minusHealth2 (player, bat){
+    console.log("minus life by bat")
+  
+    //deduact life
+    window.heart --;
+  
+    //screen shake
+    this.cameras.main.shake(400);
+    
+    //remove bat
+    bat.disableBody(true, true);
+  
+    if ( window.heart == 4){
+      this.hitSnd.play();
+      this.heart5.setVisible(false)
+    } else if ( window.heart == 3){
+      this.hitSnd.play();
+      this.heart4.setVisible(false)
+    } else if ( window.heart == 2){
+      this.hitSnd.play();
+    this.heart3.setVisible(false)
+    } else if ( window.heart == 1){
+      this.hitSnd.play();
+      this.heart2.setVisible(false)
+    } else if ( window.heart == 0){
+      this.hitSnd.play();
+      this.heart1.setVisible(false)
+    console.log("you are dead")
+    window.music.stop();
+      // this.bgmSnd.loop = false;
+      // this.bgmSnd.stop();
+    this.scene.start('gameoverScene');  
+  }
   }
 
   moveDownUp() {
@@ -271,6 +290,14 @@ this.anims.create({
       this.potionLayer.removeTileAt(tile.x, tile.y); // remove the item
       return false;
     }
+
+    jumpToVictory()
+    {
+      console.log("jump to victory")
+      this.teleportActivatedSnd.play();
+      window.music.stop();
+      this.scene.start("victoryScene")
+    }
   
   // Function to jump to room1
   world(player, tile) {
@@ -280,6 +307,8 @@ this.anims.create({
     playerPos.x = 970;
     playerPos.y = 166;
     playerPos.dir = "down";
+
+    window.music.stop();
 
     this.scene.start("world", { player: playerPos }); 
   }
