@@ -339,31 +339,34 @@ this.scene.start('gameoverScene');
 }
 
 removeRed(player, tile) 
-{
-  console.log("remove red potion", tile.index);
-  this.potionLayer.removeTileAt(tile.x, tile.y); // remove the item
+    {
+      console.log("remove red potion", tile.index);
+      this.potionLayer.removeTileAt(tile.x, tile.y); // remove the item
 
-  //deduct life
-  window.heart ++;
+      //get life
+      window.heart ++;
+      console.log("live:", window.heart)
+      if (window.heart>5){
+          window.heart=5
+      }
 
-  if (window.heart == 5){
-    this.itemSnd.play();
-    this.heart5.setVisible(true);
-  } else if (window.heart == 4){
-    this.itemSnd.play();
-    this.heart4.setVisible(true);
-  } else if (window.heart == 3){
-    this.itemSnd.play();
-    this.heart3.setVisible(true);
-  } else if (window.heart == 2){
-    this.itemSnd.play();
-    this.heart2.setVisible(true);
-  } else if (window.heart == 1){
-    this.itemSnd.play();
-    this.heart1.setVisible(true);
-}
-}
-
+      if (window.heart == 5){
+        this.itemSnd.play();
+        this.heart5.setVisible(true);
+      } else if (window.heart == 4){
+        this.itemSnd.play();
+        this.heart4.setVisible(true);
+      } else if (window.heart == 3){
+        this.itemSnd.play();
+        this.heart3.setVisible(true);
+      } else if (window.heart == 2){
+        this.itemSnd.play();
+        this.heart2.setVisible(true);
+      } else if (window.heart == 1){
+        this.itemSnd.play();
+        this.heart1.setVisible(true);
+    }
+  }
 collectCrystal (player, crystal){
   console.log("collect crystal");
   this.itemSnd.play();
