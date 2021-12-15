@@ -2,8 +2,7 @@ class world extends Phaser.Scene {
   constructor() 
   {
     super({ key: "world"});
-    this.liveCount = 3;
-    this.isDead = false;
+    window.attack = false;
   }
 
   // incoming data from scene below
@@ -12,18 +11,16 @@ class world extends Phaser.Scene {
   }
 
   preload() {
-    this.load.atlas('right', 'assets/hiro walk.png',
-                                 'assets/hiro walk.json')
-    this.load.atlas('hiro attack', 'assets/hiro attack.png',
-                                   'assets/hiro attack.json')
-    this.load.atlas('down', 'assets/hiro front.png',
-                                  'assets/hiro front.json')
-    this.load.atlas('up', 'assets/hiro back.png',
-                                 'assets/hiro back.json')
     this.load.atlas('snake', 'assets/snake.png',
                              'assets/snake.json')
     this.load.atlas('bat','assets/bat.png',
                           'assets/bat.json')
+    this.load.audio('collectCoin','assets/collectCoin.wav');
+    this.load.audio('sword','assets/sword.wav');
+    this.load.audio('mainBgm','assets/island2.mp3');
+    this.load.audio('hit','assets/minusHeart.wav');
+    this.load.audio('collectItem','assets/item.wav');
+    this.load.audio('islandMusic','assets/island.wav');
 
     // Step 1, load JSON
     this.load.tilemapTiledJSON("world","assets/Castaway.json");
@@ -35,83 +32,29 @@ class world extends Phaser.Scene {
     this.load.image("portalPng","assets/teleportTile.png");
     this.load.image("grassPng","assets/Grass-ground.png");
     this.load.image('heartPng','assets/heart.png');
+    this.load.image('goldCoin','assets/coin.png');
+    this.load.image('hiroHealth','assets/health1.png');
   }
 
   create() {
     console.log("*** world scene");
-
-    //Step 3 - Create the map from main
-    let map = this.make.tilemap({key:'world'});
+    console.log("live:", window.heart);
+    console.log('enemyCount:', this.enemyCount);
     
-    //animation for Hiro
-    this.anims.create({
-      key:'left',
-      frames: [
-          {key:'right', frame:'walk 01'},
-          {key:'right', frame:'walk 02'},
-          {key:'right', frame:'walk 03'},
-          {key:'right', frame:'walk 04'},
-      ],
-      frameRate: 6,
-      repeat: -1
-  })
+    window.music = this.sound.add('mainBgm', { loop:true,}).setVolume(0.1);
+    window.music.play();
 
-  this.anims.create({
-      key:'right',
-      frames:[
-          {key:'right', frame:'walk 05'},
-          {key:'right', frame:'walk 06'},
-          {key:'right', frame:'walk 07'},
-          {key:'right', frame:'walk 08'},
-      ],
-      frameRate: 6,
-      repeat: -1
-  })
+    //this.bgmSnd = this.sound.add('mainBgm').setVolume(0.3);
+    this.attackSnd = this.sound.add('sword');
+    this.coinSnd = this.sound.add('collectCoin');
+    this.hitSnd = this.sound.add('hit'); //hit by enemy
+    this.itemSnd = this.sound.add('collectItem'); //collect potion
+    // this.bgmSnd.play();
+    // this.bgmSnd.loop = true;
 
-  this.anims.create({
-      key:'down',
-      frames:[
-          {key:'down',frame:'hiro front 01'},
-          {key:'down',frame:'hiro front 02'},
-          {key:'down',frame:'hiro front 03'},
-      ],
-      frameRate: 6,
-      repeat: -1
-  })
-
-  this.anims.create({
-      key:'up',
-      frames:[
-          {key:'up',frame:'hiro back 01'},
-          {key:'up',frame:'hiro back 02'},
-          {key:'up',frame:'hiro back 03'},
-      ],
-      frameRate: 5,
-      repeat: -1
-  })
-
-  this.anims.create({
-    key:'leftAttack',
-    frames:[
-        {key:'hiro attack',frame:'hiro attack 01'},
-        {key:'hiro attack',frame:'hiro attack 02'},
-        {key:'hiro attack',frame:'hiro attack 03'},
-        {key:'hiro attack',frame:'hiro attack 04'},
-    ],
-    frameRate: 12,
-    repeat: -1
-})
-
-  this.anims.create({
-  key:'idle',
-  frames:[
-      {key:'right', frame:'walk 01'},
-      {key:'right', frame:'walk 02'},
-  ],
-  frameRate: 5,
-  repeat: -1
-})
-
+  //Step 3 - Create the map from main
+  let map = this.make.tilemap({key:'world'});
+    
   //anims for snake
   this.anims.create({
   key:'crawl',
@@ -154,9 +97,36 @@ class world extends Phaser.Scene {
     this.potionLayer = map.createLayer("potionLayer",tilesArray,0,0);
     
     //health hearts
-    this.heart1 = this.add.image(40,25,'heartPng').setScale(0.3).setScrollFactor(0);
-    this.heart2 = this.add.image(75,25,'heartPng').setScale(0.3).setScrollFactor(0);
-    this.heart3 = this.add.image(115,25,'heartPng').setScale(0.3).setScrollFactor(0);
+    this.hiroHealth = this.add.image(30,25,'hiroHealth').setScale(0.5).setScrollFactor(0);
+    this.heart1 = this.add.image(70,25,'heartPng').setScale(0.3).setScrollFactor(0).setVisible(false);
+    this.heart2 = this.add.image(110,25,'heartPng').setScale(0.3).setScrollFactor(0).setVisible(false);
+    this.heart3 = this.add.image(150,25,'heartPng').setScale(0.3).setScrollFactor(0).setVisible(false);
+    this.heart4 = this.add.image(190,25,'heartPng').setScale(0.3).setScrollFactor(0).setVisible(false);
+    this.heart5 = this.add.image(230,25,'heartPng').setScale(0.3).setScrollFactor(0).setVisible(false);
+
+    // this.goldCoin = this.add.image(230,200,'goldCoin').setScale(0.3).setVisible(false);
+
+    if (window.heart>= 5){
+      this.heart1.setVisible(true);
+      this.heart2.setVisible(true);
+      this.heart3.setVisible(true);
+      this.heart4.setVisible(true);
+      this.heart5.setVisible(true);
+    } else if (window.heart == 4){
+      this.heart1.setVisible(true);
+      this.heart2.setVisible(true);
+      this.heart3.setVisible(true);
+      this.heart4.setVisible(true);
+    } else if (window.heart == 3){
+      this.heart1.setVisible(true);
+      this.heart2.setVisible(true);
+      this.heart3.setVisible(true);
+    } else if (window.heart == 2){
+      this.heart1.setVisible(true);
+      this.heart2.setVisible(true);
+    } else if (window.heart == 1){
+      this.heart1.setVisible(true);
+  }
 
     //load snake enemies object
     var snake01 = map.findObject("objectLayer",(obj) => obj.name === "snake01");
@@ -183,26 +153,34 @@ class world extends Phaser.Scene {
     this.snakeGroup3.create(snake08.x, snake08.y, 'snake').setScale(0.5).setSize(90,60);
     this.snakeGroup2.create(snake09.x, snake09.y, 'snake').setScale(0.5).setSize(90,60);
     this.snakeGroup4.create(snake10.x, snake10.y, 'snake').setScale(0.5).setSize(90,60);//.play("crawl");
+     
+    this.coinGroup = this.physics.add.group();
+
+    // this.coinGroup.create(snake01.x, snake01.y, 'goldCoin').setVisible(false).body.setEnable(false);
+    // this.coinGroup.create(snake03.x, snake03.y, 'goldCoin').setVisible(false).body.setEnable(false);
+    // this.coinGroup.create(snake04.x, snake04.y, 'goldCoin').setVisible(false).body.setEnable(false);
+    // this.coinGroup.create(snake05.x, snake05.y, 'goldCoin').setVisible(false).body.setEnable(false);
+    // this.coinGroup.create(snake06.x, snake06.y, 'goldCoin').setVisible(false).body.setEnable(false);
+    // this.coinGroup.create(snake07.x, snake07.y, 'goldCoin').setVisible(false).body.setEnable(false);
+    // this.coinGroup.create(snake08.x, snake08.y, 'goldCoin').setVisible(false).body.setEnable(false);
+    // this.coinGroup.create(snake09.x, snake09.y, 'goldCoin').setVisible(false).body.setEnable(false);
+    // this.coinGroup.create(snake10.x, snake10.y, 'goldCoin').setVisible(false).body.setEnable(false);
 
     this.snakeGroup1.children.iterate(snake => 
     {
       snake.play('crawl');
-      snake.flipX = true;
     })
     this.snakeGroup2.children.iterate(snake => 
       {
         snake.play('crawl');
-        snake.flipX = true;
       })
     this.snakeGroup3.children.iterate(snake => 
       {
         snake.play('crawl');
-        snake.flipX = true;
       })
     this.snakeGroup4.children.iterate(snake => 
       {
         snake.play('crawl');
-        snake.flipX = true;
       })
 
     //load bat enemies object
@@ -232,9 +210,18 @@ class world extends Phaser.Scene {
         bat.play('fly');
       })
 
-    // this.bat01 = this.physics.add.sprite(bat01.x, bat01.y, 'bat').setScale(0.5).setSize(90,60).play("fly");
-    // this.bat02 = this.physics.add.sprite(bat02.x, bat02.y, 'bat').setScale(0.5).setSize(90,60).play("fly");
-    // this.bat03 = this.physics.add.sprite(bat03.x, bat03.y, 'bat').setScale(0.5).setSize(90,60).play("fly");
+    //score for coin
+    var score = 0;
+    var scoreText;
+
+    this.coinScore = this.add.text(500,10,'Coin:'+ window.coin,{font: "25px Arial Rounded MT Bold", fill:'#ef6c00'}).setScrollFactor(0);
+    this.crystalScore = this.add.text(500,35,'Crystal:'+ window.crystal,{font: "25px Arial Rounded MT Bold", fill:'#ef6c00'}).setScrollFactor(0);
+    // this.scoreText2.setText('Crystal: ' +  window.crystal);
+
+    //this.scoreText = this.add.text(500,10,'Coin:0',{font: "25px Arial Rounded MT Bold", fill:'#ef6c00'}).setScrollFactor(0);
+    //this.scoreText = this.add.text(500,35,'Crystal:0',{font: "25px Arial Rounded MT Bold", fill:'#ef6c00'}).setScrollFactor(0);
+    // window.crystal = 0;
+    // this.scoreText.setText('Crystal: ' +  window.crystal);
 
     // create the this.playersprite
     this.player = this.physics.add.sprite(
@@ -252,20 +239,18 @@ class world extends Phaser.Scene {
     window.player = this.player;
 
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.spaceDown = this.input.keyboard.addKey("SPACE");
+    //this.spaceDown = this.input.keyboard.addKey("SPACE");
 
+    //var spaceDown = this.input.keyboard.addKey("SPACE");
     
     //collect Red
     this.potionLayer.setTileIndexCallback(1332, this.removeRed, this);
-    
-    //collect Green
-    //this.potionLayer.setTileIndexCallback(212, this.removeGreen, this);
+
 
     // Add custom properties in Tiled called "mouintain" as bool
     this.waterLayer.setCollisionByProperty({grass: true});
     this.waterLayer.setCollisionByProperty({grass2: true});
     this.roomLayer.setCollisionByProperty({room: true});
-
 
     // What will collider with what layers
     this.physics.add.collider(this.waterLayer, this.player);
@@ -286,14 +271,15 @@ class world extends Phaser.Scene {
       loop: false,
     });
 
-    //enemy snake follow player
-    //left right movement
-    this.time.addEvent({ delay: 2000, callback: this.moveLeft, callbackScope: this, loop: true});
-    this.time.addEvent({ delay: 3000, callback: this.moveRight, callbackScope: this, loop: true});
-    this.time.addEvent({ delay: 2000, callback: this.moveUp, callbackScope: this, loop: true});
-    this.time.addEvent({ delay: 3000, callback: this.moveDown, callbackScope: this, loop: true});
 
     this.physics.add.overlap(this.player, this.snakeGroup1, this.minusHealth1, null, this);
+    this.physics.add.overlap(this.player, this.snakeGroup2, this.minusHealth1, null, this);
+    this.physics.add.overlap(this.player, this.snakeGroup3, this.minusHealth1, null, this);
+    this.physics.add.overlap(this.player, this.snakeGroup4, this.minusHealth1, null, this);
+    this.physics.add.overlap(this.player, this.batGroup1, this.minusHealth2, null, this);
+    this.physics.add.overlap(this.player, this.batGroup2, this.minusHealth2, null, this);
+
+    this.physics.add.overlap(this.player, this.coinGroup, this.collectCoin, null, this);
 
     // set bounds so the camera won't go outside the game world
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
@@ -337,80 +323,182 @@ class world extends Phaser.Scene {
 
     if (this.cursors.left.isDown) {
       this.player.body.setVelocityX(-200);
+      this.player.setSize(50,100);
       this.player.anims.play("right", true); // walk left
-      this.player.flipX = true; // flip the sprite to the left
+      this.player.flipX = true; 
+      window.attack = false;
+      // flip the sprite to the left
       //console.log('left');
     }
 
     else if (this.cursors.right.isDown) {
       this.player.body.setVelocityX(200);
+      this.player.setSize(50,100);
       this.player.anims.play("right", true);
-      this.player.flipX = false; // use the original sprite looking to the right
+      this.player.flipX = false; 
+      window.attack = false;
+      // use the original sprite looking to the right
       //console.log('right');
     }
 
-    else if (this.spaceDown.isDown) { //this.cursors.left.isDown && 
+    else if (this.cursors.space.isDown) { //this.cursors.left.isDown && 
         this.player.body.setVelocityX(0);
         this.player.body.setVelocityY(0);
-        this.player.anims.play("leftAttack", true); // walk left
+        this.player.setSize(100,100);
+        this.player.anims.play("leftAttack", true);
+        console.log("attack");
+        window.attack = true;
+        // walk left
         //this.player.flipX = false; // flip the sprite to the left
     } 
     
     else if (this.cursors.up.isDown) {
       this.player.body.setVelocityY(-200);
+      this.player.setSize(50,100);
       this.player.anims.play("up", true);
+      window.attack = false;
       //console.log('up');
     } 
     
     else if (this.cursors.down.isDown) {
       this.player.body.setVelocityY(200);
+      this.player.setSize(50,100);
       this.player.anims.play("down", true);
+      window.attack = false;
       //console.log('down');
     } 
     
     else {
       this.player.anims.stop();
       this.player.body.setVelocity(0, 0);
+      this.player.setSize(50,100);
+      window.attack = false;
       //console.log('idle');
     }
   }
 
-  minusHealth1 (player, snakeGroup1)
-  {
-    if (this.spaceDown.isDown)
-  {
-    snakeGroup1.disableBody(true,true);
-  } else if (this.spaceDown.isDown === false)
-  {
-    snakeGroup1.disableBody(true,true);
-    this.liveCount = 1;
-    this.cameras.main.shake(100);
-  }
- 
-    if (this.liveCount === 2)
-  {
-      this.heart3.setVisible(true);
-  } else if (this.liveCount === 1)
-  {
-    this.heart2.setVisible(false);
-  } else if (this.liveCount === 0)
-  {
-    this.cameras.main.shake(200);
-    this.heart1.setVisible(false);
-    this.isDead = true;
-  }
-    if (this.isDead){
-    console.log("Player Dies")
-    this.time.delayCall(1000,function(){
-      this.isDead = false
-      this.liveCount = 3;
-      this.scene.stop('world');
-      this.scene.start('gameoverScene');
-    },[], this);
-    }
- }
+  minusHealth1 (player, snake){
+    if (this.cursors.space.isDown){
+      console.log("attack snake")
+      this.attackSnd.play();
+      snake.disableBody(true, true);
+      //this.coin1 = this.physics.add.sprite(snake.x, snake.y,"goldCoin");
+      // this.coin1.body.setEnable(true);
+      // this.coinGroup = this.coin1;
+      this.coinGroup.create(snake.x, snake.y, 'goldCoin');
+    } else {
+      console.log("deduct live")
+      this.cameras.main.shake(400);
 
-   moveRightLeft() {
+    console.log("minus life by snake")
+
+    //deduact life
+    window.heart --;
+    
+    //remove snake
+    snake.disableBody(true, true);
+
+    if ( window.heart == 4){
+      this.hitSnd.play();
+      this.heart5.setVisible(false)
+    } else if ( window.heart == 3){
+      this.hitSnd.play();
+      this.heart4.setVisible(false)
+    } else if ( window.heart == 2){
+      this.hitSnd.play();
+    this.heart3.setVisible(false)
+    } else if ( window.heart == 1){
+      this.hitSnd.play();
+      this.heart2.setVisible(false)
+    } else if ( window.heart == 0){
+      this.hitSnd.play();
+      this.heart1.setVisible(false)
+    console.log("you are dead")
+    window.music.stop();
+    // this.bgmSnd.loop = false;
+    // this.bgmSnd.stop();
+    this.scene.start('gameoverScene');  
+  }
+}
+}
+
+minusHealth2 (player, bat){
+  console.log("minus life by bat")
+
+  //deduact life
+  window.heart --;
+
+  //screen shake
+  this.cameras.main.shake(400);
+  
+  //remove bat
+  bat.disableBody(true, true);
+
+  if ( window.heart == 4){
+    this.hitSnd.play();
+    this.heart5.setVisible(false)
+  } else if ( window.heart == 3){
+    this.hitSnd.play();
+    this.heart4.setVisible(false)
+  } else if ( window.heart == 2){
+    this.hitSnd.play();
+  this.heart3.setVisible(false)
+  } else if ( window.heart == 1){
+    this.hitSnd.play();
+    this.heart2.setVisible(false)
+  } else if ( window.heart == 0){
+    this.hitSnd.play();
+    this.heart1.setVisible(false)
+  console.log("you are dead")
+  window.music.stop();
+    // this.bgmSnd.loop = false;
+    // this.bgmSnd.stop();
+  this.scene.start('gameoverScene');  
+}
+}
+
+removeRed(player, tile) 
+    {
+      console.log("remove red potion", tile.index);
+      this.potionLayer.removeTileAt(tile.x, tile.y); // remove the item
+
+      //get life
+      window.heart ++;
+      console.log("live:", window.heart)
+      if (window.heart>5){
+          window.heart=5
+      }
+
+      if (window.heart == 5){
+        this.itemSnd.play();
+        this.heart5.setVisible(true);
+      } else if (window.heart == 4){
+        this.itemSnd.play();
+        this.heart4.setVisible(true);
+      } else if (window.heart == 3){
+        this.itemSnd.play();
+        this.heart3.setVisible(true);
+      } else if (window.heart == 2){
+        this.itemSnd.play();
+        this.heart2.setVisible(true);
+      } else if (window.heart == 1){
+        this.itemSnd.play();
+        this.heart1.setVisible(true);
+    }
+  }
+
+collectCoin (player, coin){
+  console.log("collect coin");
+
+  this.coinSnd.play();
+  coin.disableBody(true, true);
+  
+    window.coin ++;
+    this.coinScore.setText('Coin: ' +  window.coin);
+
+}
+
+moveRightLeft() {
     console.log("moveDownUp tween");
     this.tweens.timeline
     ({
@@ -420,7 +508,6 @@ class world extends Phaser.Scene {
       duration: 4000,
       yoyo: true,
       tweens: [{x: 180,}, {x: 120,},],
-      flipX: true,
     });
 
     this.tweens.timeline
@@ -430,8 +517,7 @@ class world extends Phaser.Scene {
       ease: "Linear",
       duration: 4000,
       yoyo: true,
-      tweens: [{x: 480,}, {x: 530,},],
-      flipX: true,
+      tweens: [{x: 480,}, {x: 530,},]
     });
 
     this.tweens.timeline
@@ -442,7 +528,6 @@ class world extends Phaser.Scene {
       duration: 4000,
       yoyo: true,
       tweens: [{x: 600,}, {x: 680,},],
-      flipX: true,
     });
 
     this.tweens.timeline
@@ -453,11 +538,10 @@ class world extends Phaser.Scene {
       duration: 4000,
       yoyo: true,
       tweens: [{x: 880,}, {x: 960,},],
-      flipX: true,
     });
   }
 
-  moveDownUp() {
+moveDownUp() {
     console.log("moveDownUp tween");
     this.tweens.timeline
     ({
@@ -480,48 +564,38 @@ class world extends Phaser.Scene {
     });
   }
 
-  removeRed(player, tile) 
-    {
-      console.log("remove red", tile.index);
-      this.potionLayer.removeTileAt(tile.x, tile.y); // remove the item
-      return false;
-    }
-
-  // removeGreen(player, potion) 
-  //   {
-  //     console.log("remove green", tile.index);
-  //     this.itemLayer.removeTileAt(tile.x, tile.y); // remove the item
-  //     return false;
-  //   }
-
   //Function to jump to room1
   room1(player, tile) {
-    console.log("room1 function");
-    let playerPos = {};
-    playerPos.x = 340;
-    playerPos.y = 526;
-    playerPos.dir = "up";
-    this.scene.start("room1",{playerPos:playerPos});
+    console.log("tips2");
+    // let playerPos = {};
+    // playerPos.x = 340;
+    // playerPos.y = 526;
+    // playerPos.dir = "up";
+    //this.scene.start("room1",{playerPos:playerPos});
+    this.scene.start("tips2");
+    window.music.stop();
   }
 
   //Function to jump to room2
   room2(player, tile) {
-    console.log("room2 function");
-    let playerPos = {};
-    playerPos.x = 353;
-    playerPos.y = 677;
-    playerPos.dir = "up";
-    this.scene.start("room2",{playerPos:playerPos});
+    console.log("tips3");
+    // let playerPos = {};
+    // playerPos.x = 353;
+    // playerPos.y = 677;
+    // playerPos.dir = "up";
+   this.scene.start("tips3");
+   window.music.stop();
   }
 
   //Function to jump to room2
   room3(player, tile) {
-    console.log("room3 function");
-    let playerPos = {};
-    playerPos.x = 200;
-    playerPos.y = 677;
-    playerPos.dir = "up";
-    this.scene.start("room3",{playerPos:playerPos});
+    console.log("tips4");
+    // let playerPos = {};
+    // playerPos.x = 200;
+    // playerPos.y = 677;
+    // playerPos.dir = "up";
+    this.scene.start("tips4");
+    window.music.stop();
   }
 
   } /////////////////// end of update //////////////////////////////

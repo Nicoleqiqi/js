@@ -1,34 +1,35 @@
-class gameoverScene extends Phaser.Scene {
+class victoryScene extends Phaser.Scene {
   constructor() {
     super({
-      key: "gameoverScene",
+      key: "victoryScene",
     });
 
     // Put global variable here
   }
 
   preload() {
-    this.load.image('gameOver', 'assets/gameOver.png');
-    this.load.audio('gameoverMusic','assets/gameover.mp3');
+    this.load.image('victory', 'assets/victory.png');
+    this.load.audio('victoryMusic','assets/victory.mp3');
+    this.load.audio('islandMusic','assets/island.wav');
   }
 
   create() {
-    console.log(" This is gameoverScene");
+    console.log(" This is victoryScene");
 
     // Add any sound and music here
     // ( 0 = mute to 1 is loudest )
     //this.music = this.sound.add('bgMusic').setVolume(0.3) // 10% volume
     window.music.stop();
     
-    this.bgmSnd = this.sound.add('gameoverMusic').setVolume(0.1);
+    this.bgmSnd = this.sound.add('victoryMusic').setVolume(0.2);
     this.bgmSnd.play();
-    this.bgmSnd.loop = true;
+
 
     //this.music.play()
     //window.music = this.music
 
     // Add image and detect spacebar keypress
-    this.add.image(0, 0, 'gameOver').setOrigin(0, 0);
+    this.add.image(0, 0, 'victory').setOrigin(0, 0);
 
     // Check for spacebar or any key here
     var spaceDown = this.input.keyboard.addKey("SPACE");
@@ -39,7 +40,6 @@ class gameoverScene extends Phaser.Scene {
 
     this.bgmSnd.loop = false;
     this.bgmSnd.stop();
-    window.music = this.sound.add('mainBgm', { loop:true,}).setVolume(0.1);
 
     let playerPos = {};
     playerPos.x = 50;
@@ -51,13 +51,13 @@ class gameoverScene extends Phaser.Scene {
     window.crystal = 0;
     window.crabHeart = 3;
     
-    this.scene.start("world", { player: playerPos });
+    this.scene.start("main");
       },
       this
     );
 
     // Add any text in the main page
-    this.add.text(360, 250, "PRESS SPACEBAR TO RESTART", {
+    this.add.text(350, 280, "PRESS SPACEBAR TO RESTART", {
       font: "15px Arial Rounded MT Bold",
       fill: "#000000",
     });
